@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">WMTippen</string>
+    <string name="title_activity_main2">Main2Activity</string>
+    <string name="button_tippuebersicht">Tippübersicht</string>
+    <string name="button_tippabgeben">Tippabgeben</string>
+    <string name="welcome">Willkommen</string>
+    <string name="player_name">Dein Name</string>
+    <string name="button_handin">TIPP ABGEBEN</string>
+    <string name="debug">DEBUG VAL</string>
+</resources>
