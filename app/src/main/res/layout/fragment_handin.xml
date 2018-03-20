@@ -15,7 +15,7 @@
         android:layout_height="wrap_content"
         android:id="@+id/player_name"
         android:hint="@string/player_name"
-        android:inputType="text"
+        android:inputType="textCapSentences"
         />
 
     <ListView
@@ -28,8 +28,9 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:id="@+id/button_handin"
-        android:text="@string/button_handin"
-        android:layout_below="@id/list_view_group" />
+        android:id="@+id/button_submit"
+        android:text="@string/button_submit"
+        android:layout_below="@id/list_view_group"
+        />
 
 </RelativeLayout>

@@ -8,25 +8,42 @@ package com.tippen.fama.wmtippen;
 
 
 
-public class Match {
+public class Match{
     private String team1;
     private String team2;
-    private int goal1;
-    private int goal2;
     private String group;
+    private int GROUP_ID;
+    private int matchId;
 
-    public Match(String group, String team1, String team2){
+    public Match(){}
+
+    public Match(String group, String team1, String team2, int matchId){
         this.group = group;
         this.team1 = team1;
         this.team2 = team2;
+        this.matchId = matchId;
+        setGroupID(group);
     }
 
-    public Match(String group, String team1, String team2, int goal1, int goal2){
-        this.group = group;
-        this.team1 = team1;
-        this.team2 = team2;
-        this.goal1 = goal1;
-        this.goal2 = goal2;
+    private void setGroupID(String s){
+        switch(s) {
+            case "A":
+                this.GROUP_ID = 0;
+                break;
+            case "B":
+                this.GROUP_ID = 1;
+                break;
+            case "C":
+                this.GROUP_ID = 2;
+                break;
+            case "D":
+                this.GROUP_ID = 3;
+                break;
+        }
+    }
+
+    public int getGROUP_ID() {
+        return GROUP_ID;
     }
 
     public String getMatch(){
@@ -49,22 +66,6 @@ public class Match {
         this.team2 = team2;
     }
 
-    public int getGoal1() {
-        return goal1;
-    }
-
-    public void setGoal1(int goal1) {
-        this.goal1 = goal1;
-    }
-
-    public int getGoal2() {
-        return goal2;
-    }
-
-    public void setGoal2(int goal2) {
-        this.goal2 = goal2;
-    }
-
     public String getGroup() {
         return group;
     }
@@ -72,4 +73,5 @@ public class Match {
     public void setGroup(String group) {
         this.group = group;
     }
+
 }
