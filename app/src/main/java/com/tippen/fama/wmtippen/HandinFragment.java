@@ -22,9 +22,6 @@ public class HandinFragment extends Fragment {
 
     }
 
-    ArrayAdapter<String> adapterList;
-    String[] sampleArray = {"Group A", "Group B", "Group C", "Group D"};
-
     @Override
     public View onCreateView(LayoutInflater inflater, ViewGroup viewGroup, Bundle savedInstanceState){
         View rootView = inflater.inflate(R.layout.fragment_handin, viewGroup, false);
