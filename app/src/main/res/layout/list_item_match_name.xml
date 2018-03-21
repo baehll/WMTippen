@@ -26,7 +26,6 @@
             android:inputType="text"
             android:textSize="20sp"
             android:singleLine="true"
-            android:focusable="true"
             android:textAlignment="center"/>
 
         <TextView
@@ -45,7 +44,6 @@
             android:layout_toEndOf="@id/list_item_match_colon_text_view"
             android:inputType="text"
             android:textSize="20sp"
-            android:focusable="true"
             android:textAlignment="center"/>
 
     </RelativeLayout>

@@ -36,6 +36,11 @@ public class HandinFragment extends Fragment {
         matchList.add(new Match("A", "Dos", "Quatro", 4));
         matchList.add(new Match("A", "Tres", "Quatro", 5));
         matchList.add(new Separator("Gruppe B"));
+        matchList.add(new Match("B", "Uno", "Tres", 1));
+        matchList.add(new Match("B", "Uno", "Quatro", 2));
+        matchList.add(new Match("B", "Dos", "Tres", 3));
+        matchList.add(new Match("B", "Dos", "Quatro", 4));
+        matchList.add(new Match("B", "Tres", "Quatro", 5));
         playerMatch.addToList((Match) matchList.get(1));
     }
 
