@@ -9,12 +9,9 @@ import android.view.View;
  */
 
 public class HandinActivity extends AppCompatActivity {
-
-    DatabaseHelper dbHelper;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        dbHelper = new DatabaseHelper(this);
         setContentView(R.layout.activity_handin);
     }
 }

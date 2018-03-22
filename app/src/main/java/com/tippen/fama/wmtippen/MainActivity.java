@@ -13,7 +13,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
+        dbHelper = new DatabaseHelper(this);
         setContentView(R.layout.activity_main);
     }
 
@@ -24,6 +24,7 @@ public class MainActivity extends AppCompatActivity {
 
     public void onClickTippabgeben(View view) {
         Intent intent = new Intent(view.getContext(), HandinActivity.class);
+        //intent.setData();
         startActivity(intent);
     }
 }

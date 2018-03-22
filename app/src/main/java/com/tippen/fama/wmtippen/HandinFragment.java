@@ -30,6 +30,9 @@ public class HandinFragment extends Fragment {
 
     private void initList(){
         matchList = new ArrayList<Match>();
+
+        //Später durch die Datenbank abgelöst (matchlist)
+
         //matchList.add(new Separator("Gruppe A"));
         matchList.add(new Match("A", "Deutschland", "Frankreich", 0));
         matchList.add(new Match("A", "Uno", "Tres", 1));
@@ -47,8 +50,10 @@ public class HandinFragment extends Fragment {
         tippList = new ArrayList<Tipp>();
 
         for (int i=0; i < matchList.size();i++) {
-            tippList.add(new Tipp(matchList.get(i)));
+            tippList.add(new Tipp(matchList.get(i), 0, 0));
         }
+
+        player.setTippList(tippList);
 
     }
 
@@ -57,7 +62,7 @@ public class HandinFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_handin, viewGroup, false);
         initList();
 
-        matchArrayAdapter = new MatchArrayAdapter(getActivity(), R.layout.list_item_match_name, tippList);
+        matchArrayAdapter = new MatchArrayAdapter(getActivity(), R.layout.list_item_match_name, player.getTippList());
 
         final ListView groupView = (ListView) rootView.findViewById(R.id.list_view_group);
         groupView.setAdapter(matchArrayAdapter);
