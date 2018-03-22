@@ -15,7 +15,8 @@ public class Match{
     private int GROUP_ID;
     private int matchId;
 
-    public Match(){}
+    public Match(){
+    }
 
     public Match(String group, String team1, String team2, int matchId){
         this.group = group;
@@ -46,7 +47,7 @@ public class Match{
         return GROUP_ID;
     }
 
-    public String getMatch(){
+    public String getMatchName(){
         return team1 + " : " + team2;
     }
 

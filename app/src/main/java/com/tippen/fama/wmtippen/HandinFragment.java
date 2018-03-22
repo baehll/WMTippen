@@ -19,29 +19,37 @@ import java.util.ArrayList;
  */
 
 public class HandinFragment extends Fragment {
-    private ArrayList<Object> matchList;
-    private PlayerMatch playerMatch;
+    private ArrayList<Match> matchList;
+    private ArrayList<Tipp> tippList;
+    private Player player;
+    private MatchArrayAdapter matchArrayAdapter;
 
     public HandinFragment(){
-        this.playerMatch = new PlayerMatch();
+        this.player = new Player();
     }
 
     private void initList(){
-        matchList = new ArrayList<>();
-        matchList.add(new Separator("Gruppe A"));
+        matchList = new ArrayList<Match>();
+        //matchList.add(new Separator("Gruppe A"));
         matchList.add(new Match("A", "Deutschland", "Frankreich", 0));
         matchList.add(new Match("A", "Uno", "Tres", 1));
         matchList.add(new Match("A", "Uno", "Quatro", 2));
         matchList.add(new Match("A", "Dos", "Tres", 3));
         matchList.add(new Match("A", "Dos", "Quatro", 4));
         matchList.add(new Match("A", "Tres", "Quatro", 5));
-        matchList.add(new Separator("Gruppe B"));
+        //matchList.add(new Separator("Gruppe B"));
         matchList.add(new Match("B", "Uno", "Tres", 1));
         matchList.add(new Match("B", "Uno", "Quatro", 2));
         matchList.add(new Match("B", "Dos", "Tres", 3));
         matchList.add(new Match("B", "Dos", "Quatro", 4));
         matchList.add(new Match("B", "Tres", "Quatro", 5));
-        playerMatch.addToList((Match) matchList.get(1));
+
+        tippList = new ArrayList<Tipp>();
+
+        for (int i=0; i < matchList.size();i++) {
+            tippList.add(new Tipp(matchList.get(i)));
+        }
+
     }
 
     @Override
@@ -49,7 +57,7 @@ public class HandinFragment extends Fragment {
         final View rootView = inflater.inflate(R.layout.fragment_handin, viewGroup, false);
         initList();
 
-        MatchArrayAdapter matchArrayAdapter = new MatchArrayAdapter(getActivity(), R.layout.list_item_match_name, matchList);
+        matchArrayAdapter = new MatchArrayAdapter(getActivity(), R.layout.list_item_match_name, tippList);
 
         final ListView groupView = (ListView) rootView.findViewById(R.id.list_view_group);
         groupView.setAdapter(matchArrayAdapter);
@@ -64,6 +72,8 @@ public class HandinFragment extends Fragment {
             }
         });
 
+
+
         playerNameText.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
@@ -72,14 +82,16 @@ public class HandinFragment extends Fragment {
             public void onTextChanged(CharSequence charSequence, int i, int i1, int i2) {}
 
             @Override
-            public void afterTextChanged(Editable editable) {playerMatch.setPlayerName(editable.toString());}
+            public void afterTextChanged(Editable editable) {
+                player.setPlayerName(editable.toString());
+            }
         });
 
         return rootView;
     }
 
     public void onClickSubmit(View view){
-        Toast.makeText(view.getContext(), playerMatch.getPlayerName(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(view.getContext(), tippList.get(0).getTipp1(), Toast.LENGTH_SHORT).show();
     }
 
 
