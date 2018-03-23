@@ -12,6 +12,7 @@ import android.view.ViewGroup;
 import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,30 +35,60 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
         vi = (LayoutInflater) context.getSystemService(Context.LAYOUT_INFLATER_SERVICE);
     }
 
+    public int getCount() {
+        return tipps.size();
+    }
+
+    @Override
+    public Tipp getItem(int position) {
+        return tipps.get(position);
+    }
+
+    public long getItemId(int position) {
+        return position;
+    }
+
     @Override
     public View getView(final int position, View convertView, ViewGroup parent){
-
+        final ViewHolder holder;
         View view = convertView;
+
+        TextView matchNameView;
+        EditText editText_tip1;
+        EditText editText_tip2;
 
         if (view == null) {
 
             LayoutInflater layoutInflater = LayoutInflater.from(getContext());
             view = layoutInflater.inflate(layoutResource, null);
+
+            holder = new ViewHolder();
+
+            matchNameView = (TextView) view.findViewById(R.id.list_item_match_name_text_view);
+            editText_tip1 = (EditText) view.findViewById(R.id.list_item_match_tip1_edit_text);
+            editText_tip2 = (EditText) view.findViewById(R.id.list_item_match_tip2_edit_text);
+
+            holder.matchTitle = matchNameView;
+            holder.tip1 = editText_tip1;
+            holder.tip2 = editText_tip2;
+
+            view.setTag(holder);
+        } else {
+            holder = (ViewHolder) view.getTag();
         }
 
-        //Log.e(LOGTAG, "getView " + position + " convertView " + view.toString());
+        Log.e(LOGTAG, "tagPosition (nicht textWatcher " + position);
 
-        final Tipp tipp = getItem(position);
+        holder.matchTitle.setText(getItem(position).getMatch().getMatchName());
+        holder.tip1.setText(String.valueOf(getItem(position).getTipp1()));
+        holder.tip2.setText(String.valueOf(getItem(position).getTipp2()));
+        //holder.tip1.setText(getItem(position).getTipp1());
+        //holder.tip2.setText(getItem(position).getTipp2());
 
-        TextView matchNameView = (TextView) view.findViewById(R.id.list_item_match_name_text_view);
-        EditText editText_tip1 = (EditText) view.findViewById(R.id.list_item_match_tip1_edit_text);
-        EditText editText_tip2 = (EditText) view.findViewById(R.id.list_item_match_tip2_edit_text);
+        holder.tip1.setTag(position);
+        holder.tip2.setTag(position);
 
-        matchNameView.setText(tipp.getMatch().getMatchName());
-        editText_tip1.setText(String.valueOf(tipp.getTipp1()));
-        editText_tip2.setText(String.valueOf(tipp.getTipp2()));
-
-        editText_tip1.addTextChangedListener(new TextWatcher() {
+        holder.tip1.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -70,12 +101,13 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                tipps.get(position).setTipp1(!editable.toString().equals("") ? Integer.parseInt(editable.toString()): 0);
+                int pos = (Integer) holder.tip1.getTag();
+                Log.e(LOGTAG, "tagPosition (nicht textWatcher " + pos + " tip1 tag");
+                tipps.get(pos).setTipp1(Integer.parseInt(!editable.toString().equals("") ? editable.toString() : "0"));
             }
         });
 
-
-        editText_tip2.addTextChangedListener(new TextWatcher() {
+        holder.tip2.addTextChangedListener(new TextWatcher() {
             @Override
             public void beforeTextChanged(CharSequence charSequence, int i, int i1, int i2) {
 
@@ -88,10 +120,13 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
 
             @Override
             public void afterTextChanged(Editable editable) {
-                tipps.get(position).setTipp2(!editable.toString().equals("") ? Integer.parseInt(editable.toString()): 0);
+                int pos = (Integer) holder.tip2.getTag();
+                Log.e(LOGTAG, "tagPosition (nicht textWatcher " + pos + " tip2 tag");
+                tipps.get(pos).setTipp2(Integer.parseInt(!editable.toString().equals("") ? editable.toString() : "0"));
             }
         });
-        //Log.e(LOGTAG, "tipp nr" + position + " tipp1 " + tipp.getTipp1() + " tipp2 " + tipp.getTipp2());
+
+        Log.e(LOGTAG, "tipp nr" + position + " tipp1 " + tipps.get(position).getTipp1() + " tipp2 " + tipps.get(position).getTipp2());
         //tipp.setTipp1(Integer.parseInt(editText_tip1.getText().toString()));
         //tipp.setTipp2(Integer.parseInt(editText_tip2.getText().toString()));
         /*if (obj != null){
@@ -113,4 +148,7 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
 
         return view;
     }
+
+    static class ViewHolder { EditText tip1; EditText tip2; TextView matchTitle; }
 }
+

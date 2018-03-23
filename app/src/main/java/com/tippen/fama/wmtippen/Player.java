@@ -13,7 +13,7 @@ public class Player {
     private int playerID;
     private String playerName;
     private ArrayList<Tipp> tippList;
-    private int score;
+    private float score;
 
     public ArrayList<Tipp> getTippList() {
         return tippList;
@@ -25,6 +25,13 @@ public class Player {
 
     public Player(){}
 
+    public Player(String name, float f, int ID){
+        this.playerName = name;
+        this.playerID = ID;
+        this.score = f;
+        this.tippList = null;
+    }
+
     public String getPlayerName() {
         return playerName;
     }
@@ -33,7 +40,7 @@ public class Player {
         this.playerName = playerName;
     }
 
-    public int getPlayerID() {
+    public float getPlayerID() {
         return playerID;
     }
 
@@ -41,7 +48,7 @@ public class Player {
         this.playerID = playerID;
     }
 
-    public int getScore() {
+    public float getScore() {
         return score;
     }
 

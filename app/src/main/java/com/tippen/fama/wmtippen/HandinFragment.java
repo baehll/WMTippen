@@ -96,7 +96,7 @@ public class HandinFragment extends Fragment {
     }
 
     public void onClickSubmit(View view){
-        Toast.makeText(view.getContext(), tippList.get(0).getTipp1(), Toast.LENGTH_SHORT).show();
+        Toast.makeText(view.getContext(), String.valueOf(player.getTippList().get(0).getTipp1()), Toast.LENGTH_SHORT).show();
     }
 
 
