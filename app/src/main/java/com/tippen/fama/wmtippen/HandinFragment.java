@@ -23,31 +23,17 @@ public class HandinFragment extends Fragment {
     private ArrayList<Tipp> tippList;
     private Player player;
     private MatchArrayAdapter matchArrayAdapter;
+    private DatabaseHelper db;
 
     public HandinFragment(){
         this.player = new Player();
     }
 
     private void initList(){
-        matchList = new ArrayList<Match>();
+        db = new DatabaseHelper(getContext());
+        matchList = (ArrayList<Match>) db.parseMatches(0,1);
 
-        //Später durch die Datenbank abgelöst (matchlist)
-
-        //matchList.add(new Separator("Gruppe A"));
-        matchList.add(new Match("A", "Deutschland", "Frankreich", 0));
-        matchList.add(new Match("A", "Uno", "Tres", 1));
-        matchList.add(new Match("A", "Uno", "Quatro", 2));
-        matchList.add(new Match("A", "Dos", "Tres", 3));
-        matchList.add(new Match("A", "Dos", "Quatro", 4));
-        matchList.add(new Match("A", "Tres", "Quatro", 5));
-        //matchList.add(new Separator("Gruppe B"));
-        matchList.add(new Match("B", "Uno", "Tres", 1));
-        matchList.add(new Match("B", "Uno", "Quatro", 2));
-        matchList.add(new Match("B", "Dos", "Tres", 3));
-        matchList.add(new Match("B", "Dos", "Quatro", 4));
-        matchList.add(new Match("B", "Tres", "Quatro", 5));
-
-        tippList = new ArrayList<Tipp>();
+        tippList = new ArrayList<>();
 
         for (int i=0; i < matchList.size();i++) {
             tippList.add(new Tipp(matchList.get(i), 0, 0));
@@ -65,7 +51,9 @@ public class HandinFragment extends Fragment {
         matchArrayAdapter = new MatchArrayAdapter(getActivity(), R.layout.list_item_match_name, player.getTippList());
 
         final ListView groupView = (ListView) rootView.findViewById(R.id.list_view_group);
+        groupView.setDivider(getActivity().getDrawable(R.drawable.list_view_divider));
         groupView.setAdapter(matchArrayAdapter);
+        groupView.setItemsCanFocus(true);
 
         EditText playerNameText = (EditText) rootView.findViewById(R.id.player_name);
         Button buttonSubmit = (Button) rootView.findViewById(R.id.button_submit);
@@ -97,6 +85,8 @@ public class HandinFragment extends Fragment {
 
     public void onClickSubmit(View view){
         Toast.makeText(view.getContext(), String.valueOf(player.getTippList().get(0).getTipp1()), Toast.LENGTH_SHORT).show();
+        //DatabaseHelper db = new DatabaseHelper(getContext());
+        //db.setPlayerTips(player);
     }
 
 

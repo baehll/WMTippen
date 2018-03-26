@@ -26,6 +26,10 @@
         android:layout_height="wrap_content"
         android:id="@+id/list_view_group"
         android:layout_below="@id/player_name"
+        android:animationCache="false"
+        android:scrollingCache="false"
+        android:smoothScrollbar="true"
+        android:dividerHeight="4dp"
         />
 
     <Button
@@ -34,6 +38,7 @@
         android:id="@+id/button_submit"
         android:text="@string/button_submit"
         android:layout_toEndOf="@id/player_name"
+        android:layout_alignParentEnd="true"
         />
 
 </RelativeLayout>

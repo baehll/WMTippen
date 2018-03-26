@@ -2,6 +2,7 @@ package com.tippen.fama.wmtippen;
 
 import android.content.Context;
 import android.database.Cursor;
+import android.database.SQLException;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.provider.BaseColumns;
@@ -18,7 +19,7 @@ import java.util.List;
 
 public class DatabaseHelper extends SQLiteOpenHelper {
 
-    SQLiteDatabase db;
+    private SQLiteDatabase db;
     //Datenbank Definition
 
     private static final String LOGTAG = "DatabaseHelper";
@@ -37,6 +38,12 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_M_TEAMONEID = "TeamOneID";
     public static final String COL_M_TEAMTWOID = "TeamTwoID";
     public static final String COL_M_MATCHDATE = "MatchDate";
+    public static final String COL_M_STAGE = "Stage";
+
+    //Stagetable
+    public static final String TABLE_STAGES = "stages";
+    public static final String COL_S_ID = "stageID";
+    public static final String COL_S_NAME = "StageName";
 
     //Teamtable
     public static final String TABLE_TEAMS = "teams";
@@ -65,7 +72,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
     public static final String COL_PR_TIPONE = "TipOne";
     public static final String COL_PR_TIPTWO = "TipTwo";
 
-    public static final String[] tableList = {TABLE_GROUPS, TABLE_MATCHES, TABLE_PLAYER_RESULTS, TABLE_PLAYERS, TABLE_MATCH_RESULTS, TABLE_TEAMS};
+    public static final String[] tableList = {TABLE_GROUPS, TABLE_STAGES,TABLE_MATCHES, TABLE_PLAYER_RESULTS, TABLE_PLAYERS, TABLE_MATCH_RESULTS, TABLE_TEAMS};
 
     public DatabaseHelper(Context context) {
         super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -74,7 +81,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         //getTeamsTable();
         //getGroups();
         //db.execSQL("DROP TABLE IF EXISTS " + TABLE_TEAMS);
-        fillDb(db);
+        //fillDb(db);
         //parsePlayerScores();
     }
 
@@ -91,6 +98,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_G_NAME + " varchar(255)" +
                 ") ";
         db.execSQL(CREATE_GROUPS_TABLE);
+
+        //STAGES TABLE
+        String CREATE_STAGES_TABLE = "CREATE TABLE " + TABLE_STAGES + " (" +
+                COL_S_ID + " INTEGER UNIQUE PRIMARY KEY, " +
+                COL_S_NAME + " varchar(255)" +
+                ") ";
+        db.execSQL(CREATE_STAGES_TABLE);
 
         //TEAMS TABLE
 
@@ -110,9 +124,13 @@ public class DatabaseHelper extends SQLiteOpenHelper {
                 COL_M_TEAMONEID + " INTEGER, " +
                 COL_M_TEAMTWOID + " INTEGER, " +
                 COL_M_MATCHDATE + " date, " +
+                COL_M_STAGE + " INTEGER, " +
                 " FOREIGN KEY (" + COL_M_TEAMONEID + ") REFERENCES " +
                 TABLE_TEAMS + "("+
                 COL_T_ID + "), " +
+                " FOREIGN KEY (" + COL_M_STAGE + ") REFERENCES " +
+                TABLE_STAGES + "("+
+                COL_S_ID+ "), " +
                 " FOREIGN KEY (" + COL_M_TEAMTWOID + ") REFERENCES " +
                 TABLE_TEAMS + "("+
                 COL_T_ID + ")" +
@@ -177,6 +195,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     //test: initiales befüllen der teams tabelle
     private void fillDb(SQLiteDatabase db){
+        /*
         String[] fillTeams = {"INSERT INTO " +  TABLE_TEAMS + " (" + COL_T_ID + " , "+ COL_T_TEAMNAME +", "+ COL_T_GROUPID +") VALUES (0, \" RUS\", 0)",
                 "INSERT INTO " +  TABLE_TEAMS + " (" + COL_T_ID + " , "+ COL_T_TEAMNAME +", "+ COL_T_GROUPID +") VALUES (1, \" DE\", 0)",
                 "INSERT INTO " +  TABLE_TEAMS + " (" + COL_T_ID + " , "+ COL_T_TEAMNAME +", "+ COL_T_GROUPID +") VALUES (2, \" FR\", 0)",
@@ -196,149 +215,155 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         */
 
         String[] test = {
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (0, \"Gruppe\")",
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (1, \"Achtelfinale\")",
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (2, \"Viertelfinale\")",
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (3, \"Halbfinale\")",
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (4, \"Platz 3\")",
+                "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (5, \"Finale\")",
                 // Gruppe A
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (0, \" Russland\", 0)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (1, \" Saudi Arabien\", 0)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (2, \" Ägypten\", 0)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (3, \" Uruguay\", 0)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (0, \"Russland\", 0)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (1, \"Saudi Arabien\", 0)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (2, \"Ägypten\", 0)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (3, \"Uruguay\", 0)",
                 // Gruppe B
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (4, \" Portugal\", 1)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (5, \" Spanien\", 1)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (6, \" Marokko\", 1)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (7, \" Iran\", 1)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (4, \"Portugal\", 1)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (5, \"Spanien\", 1)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (6, \"Marokko\", 1)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (7, \"Iran\", 1)",
                 // Gruppe C
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (8, \" Frankreich\", 2)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (9, \" Australien\", 2)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (10, \" Peru\", 2)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (11, \" Dänemark\", 2)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (8, \"Frankreich\", 2)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (9, \"Australien\", 2)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (10, \"Peru\", 2)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (11, \"Dänemark\", 2)",
                 // Gruppe D
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (12, \" Argentinien\", 3)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (13, \" Island\", 3)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (14, \" Kroatien\", 3)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (15, \" Nigeria\", 3)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (12, \"Argentinien\", 3)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (13, \"Island\", 3)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (14, \"Kroatien\", 3)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (15, \"Nigeria\", 3)",
                 // Gruppe E
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (16, \" Brasilien\", 4)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (17, \" Schweiz\", 4)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (18, \" Costa Rica\", 4)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (19, \" Serbien\", 4)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (16, \"Brasilien\", 4)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (17, \"Schweiz\", 4)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (18, \"Costa Rica\", 4)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (19, \"Serbien\", 4)",
                 // Gruppe F
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (20, \" Deutschland\", 5)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (21, \" Mexiko\", 5)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (22, \" Schweden\", 5)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (23, \" Südkorea\", 5)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (20, \"Deutschland\", 5)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (21, \"Mexiko\", 5)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (22, \"Schweden\", 5)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (23, \"Südkorea\", 5)",
                 // Gruppe G
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (24, \" Belgien\", 6)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (25, \" Panama\", 6)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (26, \" Tunesien\", 6)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (27, \" England\", 6)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (24, \"Belgien\", 6)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (25, \"Panama\", 6)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (26, \"Tunesien\", 6)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (27, \"England\", 6)",
                 // GRUPPE H
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (28, \" Polen\", 7)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (29, \" Senegal\", 7)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (30, \" Kolumbien\", 7)",
-                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (31, \" Japan\", 7)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (28, \"Polen\", 7)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (29, \"Senegal\", 7)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (30, \"Kolumbien\", 7)",
+                "INSERT INTO " + TABLE_TEAMS + " (" + COL_T_ID + " , " + COL_T_TEAMNAME + ", " + COL_T_GROUPID + ") VALUES (31, \"Japan\", 7)",
                 //Gruppe A - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (0, \" 0\", 1\",2018-06-14 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (1, \" 2\", 3\",2018-06-15 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (2, \" 0\", 2\",2018-06-19 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (3, \" 3\", 1\",2018-06-20 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (4, \" 3\", 0\",2018-06-25 16:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (5, \" 1\", 2\",2018-06-25 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (0, 0, 1,2018-06-14, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (1, 2, 3,2018-06-15, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (2, 0, 2,2018-06-19, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (3, 3, 1,2018-06-20, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (4, 3, 0,2018-06-25, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (5, 1, 2,2018-06-25, 0)",
                 //Gruppe B - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (6, \" 6\", 7\",2018-06-15 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (7, \" 4\", 5\",2018-06-15 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (8, \" 4\", 6\",2018-06-20 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (9, \" 7\", 5\",2018-06-20 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (10, \" 5\", 6\",2018-06-25 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (11, \" 7\", 4\",2018-06-25 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (6, 6 , 7 ,2018-06-15, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (7, 4 , 5 ,2018-06-15, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (8, 4 , 6 ,2018-06-20, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (9, 7 , 5 ,2018-06-20, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (10, 5 , 6 ,2018-06-25, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (11, 7 , 4 ,2018-06-25, 0)",
                 //Gruppe C - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (12, \" 8\", 9\",2018-06-15 12:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (13, \" 10\", 11\",2018-06-16 18:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (14, \" 11\", 9\",2018-06-21 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (15, \" 8\", 10\",2018-06-21 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (16, \" 11\", 8\",2018-06-26 16:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (17, \" 9\", 10\",2018-06-26 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (12,   8 , 9 ,2018-06-15, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (13,   10 , 11 ,2018-06-16, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (14,   11 , 9 ,2018-06-21, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (15,   8 , 10 ,2018-06-21, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (16,   11 , 8 ,2018-06-26, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (17,   9 , 10 ,2018-06-26, 0)",
                 //Gruppe D - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (18, \" 12\", 13\",2018-06-16 15:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (19, \" 14\", 15\",2018-06-16 21:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (20, \" 12\", 14\",2018-06-21 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (21, \" 15\", 13\",2018-06-22 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (22, \" 13\", 14\",2018-06-26 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (23, \" 15\", 12\",2018-06-26 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (18,   12 , 13 ,2018-06-16, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (19,   14 , 15 ,2018-06-16, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (20,   12 , 14 ,2018-06-21, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (21,   15 , 13 ,2018-06-22, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (22,   13 , 14 ,2018-06-26, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (23,   15 , 12 ,2018-06-26, 0)",
                 //Gruppe E - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (24, \" 18\", 19\",2018-06-17 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (25, \" 16\", 17\",2018-06-17 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (26, \" 16\", 18\",2018-06-22 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (27, \" 19\", 17\",2018-06-22 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (28, \" 19\", 16\",2018-06-27 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (29, \" 17\", 18\",2018-06-27 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (24,   18 , 19 ,2018-06-17, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (25,   16 , 17 ,2018-06-17, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (26,   16 , 18 ,2018-06-22, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (27,   19 , 17 ,2018-06-22, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (28,   19 , 16 ,2018-06-27, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (29,   17 , 18 ,2018-06-27, 0)",
                 //Gruppe F - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (30, \" 20\", 21\",2018-06-17 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (31, \" 22\", 23\",2018-06-18 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (32, \" 23\", 21\",2018-06-23 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (33, \" 20\", 22\",2018-06-23 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (34, \" 21\", 22\",2018-06-27 16:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (35, \" 23\", 20\",2018-06-27 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (30,   20 , 21 ,2018-06-17, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (31,   22 , 23 ,2018-06-18, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (32,   23 , 21 ,2018-06-23, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (33,   20 , 22 ,2018-06-23, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (34,   21 , 22 ,2018-06-27, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (35,   23 , 20 ,2018-06-27, 0)",
                 //Gruppe G - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (36, \" 24\", 25\",2018-06-18 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (37, \" 26\", 27\",2018-06-18 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (38, \" 24\", 26\",2018-06-23 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (39 \" 27\", 25\",2018-06-24 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (40, \" 27\", 24\",2018-06-28 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (41, \" 25\", 26\",2018-06-28 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (36,   24 , 25 ,2018-06-18, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (37,   26 , 27 ,2018-06-18, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (38,   24 , 26 ,2018-06-23, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (39,   27 , 25 ,2018-06-24, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (40,   27 , 24 ,2018-06-28, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (41,   25 , 26 ,2018-06-28, 0)",
                 //Gruppe H - done
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (42, \" 30\", 31\",2018-06-19 14:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (43, \" 28\", 29\",2018-06-19 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (44, \" 31\", 29\",2018-06-24 17:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (45, \" 28\", 30\",2018-06-24 20:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (46, \" 29\", 30\",2018-06-28 16:00:00)",
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (47, \" 31\", 28\",2018-06-28 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (42,   30 , 31 ,2018-06-19, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (43,   28 , 29 ,2018-06-19, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (44,   31 , 29 ,2018-06-24, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (45,   28 , 30 ,2018-06-24, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (46,   29 , 30 ,2018-06-28, 0)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (47,   31 , 28 ,2018-06-28, 0)",
 
                 //Achtelfinale - done
 
                 //Sieger C - Zweiter D
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (48, \" 11\", 12\",2018-06-30 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (48,   11 , 12 ,2018-06-30, 1)",
                 //Sieger A - Zweiter B
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (49, \" 3\", 4\",2018-06-30 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (49,   3 , 4 ,2018-06-30, 1)",
                 //Sieger B - Zweiter A
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (50, \" 7\", 0\",2018-07-01 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (50,   7 , 0 ,2018-07-01, 1)",
                 //Sieger D - Zweiter C
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (51, \" 15\", 8\",2018-07-01 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (51,   15 , 8 ,2018-07-01, 1)",
                 //Sieger E- Zweiter F
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (52, \" 19\", 20\",2018-07-02 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (52,   19 , 20 ,2018-07-02, 1)",
                 //Sieger G - Zweiter H
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (53, \" 27\", 28\",2018-07-02 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (53,   27 , 28 ,2018-07-02, 1)",
                 //Sieger F - Zweiter E
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (54, \" 23\", 16\",2018-07-03 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (54,   23 , 16 ,2018-07-03, 1)",
                 //Sieger H - Zweiter G
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (55, \" 31\", 24\",2018-07-03 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (55,   31 , 24 ,2018-07-03, 1)",
 
                 //Viertelfinale - done
 
                 //Sieger AF1 - Sieger AF2
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (48, \" 11\", 4\",2018-07-06 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (56,   11 , 4 ,2018-07-06, 2)",
                 //Sieger AF3 - Sieger AF4
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (49, \" 27\", 19\",2018-07-06 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (57,   27 , 19 ,2018-07-06, 2)",
                 //Sieger AF6 - Sieger AF5
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (50, \" 31\", 23\",2018-07-07 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (58,   31 , 23 ,2018-07-07, 2)",
                 //Sieger AF8 - Sieger AF7
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (51, \" 7\", 15\",2018-07-07 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (59,   7 , 15 ,2018-07-07, 2)",
 
                 //Halbfinale - done
 
                 //Sieger VF2 - Sieger VF1
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (52, \" 27\", 11\",2018-07-10 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (60,   27 , 11 ,2018-07-10, 3)",
                 //Sieger VF4 - Sieger AF3
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (53, \" 14\", 31\",2018-07-11 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (61,   14 , 31 ,2018-07-11, 3)",
 
                 //Spiel um Platz 3 - done
 
                 //Verlierer HF1 - Verlierer HF2
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (54, \" 11\", 31\",2018-07-14 16:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (62,   11 , 31 ,2018-07-14, 4)",
 
                 //Finale - done
 
                 //Sieger HF1 - Sieger HF2
-                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+") VALUES (55, \" 27\", 15\",2018-07-10 20:00:00)",
+                "INSERT INTO " +  TABLE_MATCHES + " (" + COL_M_ID + " , "+ COL_M_TEAMONEID +", "+ COL_M_TEAMTWOID +",  "+COL_M_MATCHDATE+ ", " + COL_M_STAGE+") VALUES (63,   27 , 15 ,2018-07-10, 5)",
 
                 // Gruppen Tabelle befüllen
 
@@ -443,44 +468,114 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
-//funktioniert
     public void getMatchResults(int pos) {
-        SQLiteDatabase buffDb = getReadableDatabase();
 
-        String sqlTransaction = "S";
+    }
+
+    public List<String> getStages(){
+        List<String> outputList = new ArrayList<>();
+
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String[] args = {"1"};
+            String sqlTransaction = "SELECT " +  COL_S_NAME + " FROM " + TABLE_STAGES + " WHERE ?";
+
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
+
+            int COL_stage = cursor.getColumnIndexOrThrow(COL_S_NAME);
+
+            while(cursor.moveToNext()){
+                String stageName = cursor.getString(COL_stage);
+                outputList.add(stageName);
+            }
+
+            cursor.close();
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return outputList;
+    }
+
+    public List<Match> parseMatches(int stage, int group){
+        List<Match> outputList = new ArrayList<>();
+        String strSub1, strSub2;
+
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            //Unterscheidung zwischen Gruppenphase und nicht Gruppenphase
+            if(group == 0){
+                strSub1 = " AND " + TABLE_TEAMS + "." + COL_T_GROUPID + "= " + group + " ";
+                strSub2 = " AND " + TABLE_TEAMS + "." + COL_T_GROUPID + "= " + group + " ";
+            } else{
+                strSub1 = " ";
+                strSub2 = " ";
+            }
+
+            //match.team1id==teams.id, match.team2id==teams.id
+            String sqlTransaction = " SELECT " + TABLE_MATCHES + "." + COL_M_ID + ", " + TABLE_MATCHES + "." + COL_M_STAGE + " AS STAGE" +
+                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMONEID + "=" + TABLE_TEAMS + "." + COL_T_ID +
+                     strSub1 + ") AS TEAM1 " +
+                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMTWOID + "=" + TABLE_TEAMS + "." + COL_T_ID +
+                    strSub2 + ") AS TEAM2 " +
+                    "FROM " + TABLE_MATCHES +
+                    " WHERE " + TABLE_MATCHES + "." + COL_M_STAGE + " = ? AND (TEAM1 IS NOT NULL OR TEAM2 IS NOT NULL)";
+            String args[] = {String.valueOf(stage)};
+
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
+            int COL_matchID = cursor.getColumnIndexOrThrow(COL_M_ID);
+            int COL_team1 = cursor.getColumnIndexOrThrow("TEAM1");
+            int COL_team2 = cursor.getColumnIndexOrThrow("TEAM2");
+            int COL_stage = cursor.getColumnIndexOrThrow("STAGE");
+
+            Log.e(LOGTAG, "MatchDB:");
+            while(cursor.moveToNext()){
+                int matchID = (int) cursor.getLong(COL_matchID);
+                int stageID = (int) cursor.getLong(COL_stage);
+                String team1 = cursor.getString(COL_team1);
+                String team2 = cursor.getString(COL_team2);
+                Log.e(LOGTAG, matchID +" "+ team1 + " " + team2 + " " + stageID);
+                outputList.add(new Match(team1, team2, matchID, group, stageID));
+            }
+            Log.e(LOGTAG, "Ende MatchDB");
+            cursor.close();
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return outputList;
     }
 
     public void getTeamsTable(){
-        SQLiteDatabase buffDb = getReadableDatabase();
+        try(SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String sqlTransaction = " SELECT " + TABLE_MATCHES + "." + COL_M_ID + ", " + TABLE_MATCHES + "." + COL_M_STAGE + " AS STAGE" +
+                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMONEID + "=" + TABLE_TEAMS + "." + COL_T_ID + ") AS TEAM1 " +
+                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMTWOID + "=" + TABLE_TEAMS + "." + COL_T_ID + ") AS TEAM2 " +
+                    "FROM " + TABLE_MATCHES +
+                    " WHERE " + TABLE_MATCHES + "." + COL_M_STAGE + " = ? AND (TEAM1 IS NOT NULL OR TEAM2 IS NOT NULL)";
 
-        String selection = COL_T_ID + " = ? ";
-        String[] selectionArgs = {"0"};
+            String args[] = {String.valueOf(4)};
 
-        String[] projection = {
-                COL_T_ID,
-                COL_T_TEAMNAME,
-                COL_T_GROUPID
-        };
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
+            int COL_matchID = cursor.getColumnIndexOrThrow(COL_M_ID);
+            int COL_team1 = cursor.getColumnIndexOrThrow("TEAM1");
+            int COL_team2 = cursor.getColumnIndexOrThrow("TEAM2");
+            int COL_stage = cursor.getColumnIndexOrThrow("STAGE");
 
-        Cursor cursor = buffDb.query(
-                TABLE_TEAMS,
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                COL_T_ID
-        );
-
-        List buffList = new ArrayList<>();
-        Log.e(LOGTAG, "Beginne mit cursor moving");
-        while (cursor.moveToNext()){
-            Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_T_TEAMNAME)));
-            buffList.add(cursor.getString(cursor.getColumnIndexOrThrow(COL_T_ID)));
+            Log.e(LOGTAG, "StageDB:");
+            while(cursor.moveToNext()){
+                int matchID = (int) cursor.getLong(COL_matchID);
+                int stageID = (int) cursor.getLong(COL_stage);
+                String team1 = cursor.getString(COL_team1);
+                String team2 = cursor.getString(COL_team2);
+                Log.e(LOGTAG, matchID +" "+ team1 + " " + team2 + " " + stageID);
+                //outputList.add(new Match(team1, team2, matchID, g, stageID));
+            }
+            Log.e(LOGTAG, "Ende StageDB");
+            cursor.close();
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
         }
-        Log.e(LOGTAG, "Fertig mit cursor moving");
-        cursor.close();
-        buffDb.close();
+
         //return buffList;
     }
 
@@ -518,25 +613,98 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     public List<Player> parsePlayerScores(){
         List outputList = new ArrayList<Player>();
-        SQLiteDatabase buffDB = this.getReadableDatabase();
 
-        String sqlTransaction = "SELECT " + COL_P_NAME + ", " + COL_P_SCORE + ", " + COL_P_ID + " FROM " + TABLE_PLAYERS + " WHERE ? ORDER BY " + COL_P_SCORE + " DESC";
+        try {
+            try (SQLiteDatabase buffDB = this.getReadableDatabase()) {
+                String sqlTransaction = "SELECT " + COL_P_NAME + ", " + COL_P_SCORE + ", " + COL_P_ID + " FROM " + TABLE_PLAYERS + " WHERE ? ORDER BY " + COL_P_SCORE + " DESC";
 
-        String[] kp = {"1"};
-        Cursor cursor = buffDB.rawQuery(sqlTransaction, kp);
+                String[] kp = {"1"};
+                Cursor cursor = buffDB.rawQuery(sqlTransaction, kp);
 
-        Log.e(LOGTAG, "Beginne mit cursor moving");
+                //Log.e(LOGTAG, "Beginne mit cursor moving");
 
-        while (cursor.moveToNext()){
-            //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)));
-            //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_SCORE)));
-            outputList.add(new Player(cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)), cursor.getFloat(cursor.getColumnIndexOrThrow(COL_P_SCORE)), cursor.getInt(cursor.getColumnIndexOrThrow(COL_G_ID))));
+                while (cursor.moveToNext()) {
+                    //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)));
+                    //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_SCORE)));
+                    outputList.add(new Player(cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)), cursor.getFloat(cursor.getColumnIndexOrThrow(COL_P_SCORE)), cursor.getInt(cursor.getColumnIndexOrThrow(COL_G_ID))));
+                }
+                //Log.e(LOGTAG, "Fertig mit cursor moving");
+                cursor.close();
+            }
+        } catch (SQLException e) {
+            Log.e(LOGTAG, "parsePlayerScores Error: " + e);
         }
-        Log.e(LOGTAG, "Fertig mit cursor moving");
-        cursor.close();
-        buffDB.close();
+
 
         return outputList;
+    }
+
+    public int insertPlayer(String s){
+        int returnPlayerID = -1;
+        try (SQLiteDatabase buffDB = this.getWritableDatabase()){
+            String[] selectionArgs = {""};
+            String sqlTransaction = "INSERT INTO " + TABLE_PLAYERS + " (" + COL_P_NAME + ", " + COL_P_SCORE + ") VALUES (" + s + "0.0" + ")";
+
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, selectionArgs);
+            cursor.close();
+
+            String[] projection = {COL_P_ID};
+            String selection = COL_P_NAME + " = ?";
+            selectionArgs[0] = s;
+
+
+            cursor = buffDB.query(
+                    TABLE_PLAYERS,
+                    projection,
+                    selection,
+                    selectionArgs,
+                    null,
+                    null,
+                    COL_P_ID + " ASC"
+            );
+
+            cursor.moveToNext();
+            returnPlayerID = (int) cursor.getLong( cursor.getColumnIndexOrThrow(COL_P_ID));
+            cursor.close();
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return returnPlayerID;
+    }
+
+    public void insertPlayerTips(List<Tipp> tipps){
+        try (SQLiteDatabase buffDB = this.getWritableDatabase()){
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+    }
+
+
+    public void setPlayerTips(Player player){
+        //gucken, ob der Spieler vorhanden ist -> wenn nicht, id setzen für die results
+        List<Tipp> tippList = player.getTippList();
+        int dbPlayerID;
+
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String[] selection = {player.getPlayerName()};
+            String sqlTransaction = "SELECT " + COL_P_ID + " FROM " + TABLE_PLAYERS;
+
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, selection);
+            if(cursor.getCount() == 0){
+                dbPlayerID = insertPlayer(player.getPlayerName());
+
+                if (dbPlayerID > -1){
+                    player.setPlayerID(dbPlayerID);
+                }
+            }
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+
+        //übertragen der tipps in playerresults !!MATCH_ID!!
     }
 
 

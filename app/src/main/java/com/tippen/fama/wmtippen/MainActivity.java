@@ -6,6 +6,8 @@ import android.os.Bundle;
 import android.view.View;
 import android.widget.Toast;
 
+import java.util.List;
+
 public class MainActivity extends AppCompatActivity {
 
     DatabaseHelper dbHelper;
@@ -14,6 +16,7 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         dbHelper = new DatabaseHelper(this);
+        //List<Match> list = dbHelper.parseGroupMatches(0);
         setContentView(R.layout.activity_main);
     }
 
