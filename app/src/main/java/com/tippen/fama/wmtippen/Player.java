@@ -23,7 +23,10 @@ public class Player {
         this.tippList = tippList;
     }
 
-    public Player(){}
+    public Player(){
+        this.playerName = "";
+        this.tippList = null;
+    }
 
     public Player(String name, float f, int ID){
         this.playerName = name;
@@ -40,7 +43,7 @@ public class Player {
         this.playerName = playerName;
     }
 
-    public float getPlayerID() {
+    public int getPlayerID() {
         return playerID;
     }
 

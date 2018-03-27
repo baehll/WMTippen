@@ -8,4 +8,8 @@
     <string name="button_handin">TIPP ABGEBEN</string>
     <string name="debug">DEBUG VAL</string>
     <string name="button_submit">TIPP ABGEBEN</string>
+    <string name="tipp_init">0</string>
+    <string name="text_view_rank">Rang</string>
+    <string name="text_view_name">Name</string>
+    <string name="score">Punkte</string>
 </resources>

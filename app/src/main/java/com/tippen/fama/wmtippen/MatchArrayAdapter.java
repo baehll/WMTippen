@@ -109,8 +109,18 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
 
 
         holder.matchTitle.setText(tipps.get(position).getMatch().getMatchName());
-        holder.tip1.setText(String.valueOf(tipps.get(position).getTipp1()));
-        holder.tip2.setText(String.valueOf(tipps.get(position).getTipp2()));
+
+        if(tipps.get(position).getTipp1() < 0){
+            holder.tip1.setText("");
+        } else {
+            holder.tip1.setText(String.valueOf(tipps.get(position).getTipp1()));
+        }
+
+        if(tipps.get(position).getTipp2() < 0){
+            holder.tip2.setText("");
+        } else {
+            holder.tip2.setText(String.valueOf(tipps.get(position).getTipp2()));
+        }
 
         holder.tip1.addTextChangedListener(new TextWatcher() {
             @Override
@@ -121,7 +131,7 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
             @Override
             public void onTextChanged(CharSequence s, int i, int i1, int i2) {
                 int pos = (Integer) holder.tip1.getTag();
-                tipps.get(pos).setTipp1(Integer.parseInt((s.length() == 0) ? "0": s.toString()));
+                if(!s.toString().equals("")) tipps.get(pos).setTipp1(Integer.parseInt((s.length() == 0) ? "0": s.toString()));
             }
 
             @Override
@@ -140,7 +150,7 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
             public void onTextChanged(CharSequence s, int i, int i1, int i2) {
                 int pos = (Integer) holder.tip2.getTag();
                 //Log.e(LOGTAG, "tagPosition (nicht textWatcher " + pos + " tip2 tag");
-                tipps.get(pos).setTipp2(Integer.parseInt(s.toString()));
+                if(!s.toString().equals("")) tipps.get(pos).setTipp2(Integer.parseInt(s.toString()));
             }
 
             @Override
@@ -155,7 +165,7 @@ public class MatchArrayAdapter extends ArrayAdapter<Tipp> {
         /*if (obj != null){
             if(obj.getClass() == Match.class){
                 Match match = (Match) obj;
-                view = vi.inflate(R.layout.list_item_match_name, null);
+                view = vi.inflate(R.layout.list_item_match, null);
                 TextView matchNameView = (TextView) view.findViewById(R.id.list_item_match_name_text_view);
 
                 if(matchNameView != null){

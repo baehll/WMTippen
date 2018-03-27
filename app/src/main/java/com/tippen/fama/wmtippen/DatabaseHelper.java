@@ -12,6 +12,7 @@ import java.lang.reflect.Array;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
 
 /**
  * Created by DEB681D on 22.03.2018.
@@ -181,6 +182,8 @@ public class DatabaseHelper extends SQLiteOpenHelper {
 
     }
 
+
+    //Sinnvoll verwenden?
     @Override
     public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
             //db.execSQL("DROP TABLE IF EXIST " + e);
@@ -193,7 +196,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
     }
 
-    //test: initiales befüllen der teams tabelle
+    //test: zum Befüllen des Spielverlaufs von Alina und Melvin
     private void fillDb(SQLiteDatabase db){
         /*
         String[] fillTeams = {"INSERT INTO " +  TABLE_TEAMS + " (" + COL_T_ID + " , "+ COL_T_TEAMNAME +", "+ COL_T_GROUPID +") VALUES (0, \" RUS\", 0)",
@@ -215,6 +218,7 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         */
 
         String[] test = {
+                //Stages
                 "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (0, \"Gruppe\")",
                 "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (1, \"Achtelfinale\")",
                 "INSERT INTO " + TABLE_STAGES + " (" + COL_S_ID + ", " + COL_S_NAME+ ") VALUES (2, \"Viertelfinale\")",
@@ -467,11 +471,29 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
 
     }
+    //Gibt die ID des Spielers in TABLE_PLAYERS für den Namen s wieder (-1, wenn der Eintrag nicht gefunden wurde)
+    public int getPlayerID(String s) {
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String[] args = {s};
+            String sqlTransaction = "SELECT " +  COL_P_ID + " FROM " + TABLE_PLAYERS + " WHERE " + COL_P_NAME + " = ?";
 
-    public void getMatchResults(int pos) {
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
 
+            if(cursor.getCount() == 0){
+                return -1;
+            }
+
+            cursor.moveToNext();
+
+            int COL_PlayerID = cursor.getColumnIndexOrThrow(COL_P_ID);
+
+            return (int) cursor.getLong(COL_PlayerID);
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return -1;
     }
-
+    //Gibt die Namen der Spielstufen wieder (Gruppe, Finale, Halbfinale..)
     public List<String> getStages(){
         List<String> outputList = new ArrayList<>();
 
@@ -495,17 +517,18 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return outputList;
     }
-
+    //Gibt alle Spieler der Phase stage (Gruppe, Achtelfinale, Halbfinale...) wieder
+    //Bei stage = 0 (Gruppenphase) gibt es auch die Prüfung auf die Gruppe A-H
     public List<Match> parseMatches(int stage, int group){
         List<Match> outputList = new ArrayList<>();
         String strSub1, strSub2;
 
         try (SQLiteDatabase buffDB = this.getReadableDatabase()){
             //Unterscheidung zwischen Gruppenphase und nicht Gruppenphase
-            if(group == 0){
+            if(stage == 0){
                 strSub1 = " AND " + TABLE_TEAMS + "." + COL_T_GROUPID + "= " + group + " ";
                 strSub2 = " AND " + TABLE_TEAMS + "." + COL_T_GROUPID + "= " + group + " ";
-            } else{
+            } else {
                 strSub1 = " ";
                 strSub2 = " ";
             }
@@ -543,169 +566,126 @@ public class DatabaseHelper extends SQLiteOpenHelper {
         }
         return outputList;
     }
+    //Gibt für das Scoreboard/den Overview alle Spieler nach Punktzahl absteigend wieder
+    public List<Player> parsePlayers(){
+        List<Player> outputList = new ArrayList<>();
 
-    public void getTeamsTable(){
-        try(SQLiteDatabase buffDB = this.getReadableDatabase()){
-            String sqlTransaction = " SELECT " + TABLE_MATCHES + "." + COL_M_ID + ", " + TABLE_MATCHES + "." + COL_M_STAGE + " AS STAGE" +
-                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMONEID + "=" + TABLE_TEAMS + "." + COL_T_ID + ") AS TEAM1 " +
-                    ", ( SELECT " + TABLE_TEAMS + "." + COL_T_TEAMNAME + " FROM " + TABLE_TEAMS + " WHERE "+ TABLE_MATCHES + "." + COL_M_TEAMTWOID + "=" + TABLE_TEAMS + "." + COL_T_ID + ") AS TEAM2 " +
-                    "FROM " + TABLE_MATCHES +
-                    " WHERE " + TABLE_MATCHES + "." + COL_M_STAGE + " = ? AND (TEAM1 IS NOT NULL OR TEAM2 IS NOT NULL)";
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()) {
+            String sqlTransaction = "SELECT " + COL_P_NAME + ", " + COL_P_SCORE + ", " + COL_P_ID + " FROM " + TABLE_PLAYERS + " WHERE ? ORDER BY " + COL_P_SCORE + " DESC";
 
-            String args[] = {String.valueOf(4)};
-
-            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
-            int COL_matchID = cursor.getColumnIndexOrThrow(COL_M_ID);
-            int COL_team1 = cursor.getColumnIndexOrThrow("TEAM1");
-            int COL_team2 = cursor.getColumnIndexOrThrow("TEAM2");
-            int COL_stage = cursor.getColumnIndexOrThrow("STAGE");
-
-            Log.e(LOGTAG, "StageDB:");
-            while(cursor.moveToNext()){
-                int matchID = (int) cursor.getLong(COL_matchID);
-                int stageID = (int) cursor.getLong(COL_stage);
-                String team1 = cursor.getString(COL_team1);
-                String team2 = cursor.getString(COL_team2);
-                Log.e(LOGTAG, matchID +" "+ team1 + " " + team2 + " " + stageID);
-                //outputList.add(new Match(team1, team2, matchID, g, stageID));
-            }
-            Log.e(LOGTAG, "Ende StageDB");
-            cursor.close();
-            buffDB.close();
-        } catch (SQLException e){
-            Log.e(LOGTAG, e.toString());
-        }
-
-        //return buffList;
-    }
-
-    public void getGroups(){
-        SQLiteDatabase buffDB = this.getReadableDatabase();
-
-        String selection = COL_G_ID + " = ?";
-        String[] selectionArgs = {"0"};
-
-        String[] projection = {
-                COL_G_ID,
-                COL_G_NAME
-        };
-
-        Cursor cursor = buffDB.query(TABLE_GROUPS,
-                projection,
-                selection,
-                selectionArgs,
-                null,
-                null,
-                COL_G_ID
-        );
-
-        List buffList = new ArrayList<>();
-        Log.e(LOGTAG, "Beginne mit cursor moving");
-        while (cursor.moveToNext()){
-            Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_G_NAME)));
-            buffList.add(cursor.getString(cursor.getColumnIndexOrThrow(COL_G_ID)));
-        }
-        Log.e(LOGTAG, "Fertig mit cursor moving");
-        cursor.close();
-        buffDB.close();
-    }
-
-
-    public List<Player> parsePlayerScores(){
-        List outputList = new ArrayList<Player>();
-
-        try {
-            try (SQLiteDatabase buffDB = this.getReadableDatabase()) {
-                String sqlTransaction = "SELECT " + COL_P_NAME + ", " + COL_P_SCORE + ", " + COL_P_ID + " FROM " + TABLE_PLAYERS + " WHERE ? ORDER BY " + COL_P_SCORE + " DESC";
-
-                String[] kp = {"1"};
-                Cursor cursor = buffDB.rawQuery(sqlTransaction, kp);
+            String[] kp = {"1"};
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, kp);
 
                 //Log.e(LOGTAG, "Beginne mit cursor moving");
+            int COL_PlayerName = cursor.getColumnIndexOrThrow(COL_P_NAME);
+            int COL_PlayerScore = cursor.getColumnIndexOrThrow(COL_P_SCORE);
+            int COL_PlayerID = cursor.getColumnIndexOrThrow(COL_P_ID);
 
-                while (cursor.moveToNext()) {
-                    //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)));
-                    //Log.e(LOGTAG, cursor.getString(cursor.getColumnIndexOrThrow(COL_P_SCORE)));
-                    outputList.add(new Player(cursor.getString(cursor.getColumnIndexOrThrow(COL_P_NAME)), cursor.getFloat(cursor.getColumnIndexOrThrow(COL_P_SCORE)), cursor.getInt(cursor.getColumnIndexOrThrow(COL_G_ID))));
-                }
-                //Log.e(LOGTAG, "Fertig mit cursor moving");
-                cursor.close();
+            while (cursor.moveToNext()) {
+                outputList.add(new Player(cursor.getString(COL_PlayerName), cursor.getFloat(COL_PlayerScore), cursor.getInt(COL_PlayerID)));
             }
+            //Log.e(LOGTAG, "Fertig mit cursor moving");
+            cursor.close();
+            buffDB.close();
         } catch (SQLException e) {
             Log.e(LOGTAG, "parsePlayerScores Error: " + e);
         }
-
-
         return outputList;
     }
+    //Fügt die Spielertipps in die Tabelle neu ein bzw. Updated sie, wenn vorhanden
+    public void insertOrUpdatePlayerTipps(Player player){
+        List<Tipp> inputList = player.getTippList().stream().filter(e -> (e.getTipp1() > 0 && e.getTipp2() > 0)).collect(Collectors.toList());
 
-    public int insertPlayer(String s){
-        int returnPlayerID = -1;
+        //2. Tipps mit PlayerID in TABLE_PLAYER_RESULTS hinzufügen (MatchID beachten
         try (SQLiteDatabase buffDB = this.getWritableDatabase()){
-            String[] selectionArgs = {""};
-            String sqlTransaction = "INSERT INTO " + TABLE_PLAYERS + " (" + COL_P_NAME + ", " + COL_P_SCORE + ") VALUES (" + s + "0.0" + ")";
-
-            Cursor cursor = buffDB.rawQuery(sqlTransaction, selectionArgs);
-            cursor.close();
-
-            String[] projection = {COL_P_ID};
-            String selection = COL_P_NAME + " = ?";
-            selectionArgs[0] = s;
-
-
-            cursor = buffDB.query(
-                    TABLE_PLAYERS,
-                    projection,
-                    selection,
-                    selectionArgs,
-                    null,
-                    null,
-                    COL_P_ID + " ASC"
-            );
-
-            cursor.moveToNext();
-            returnPlayerID = (int) cursor.getLong( cursor.getColumnIndexOrThrow(COL_P_ID));
-            cursor.close();
-            buffDB.close();
-        } catch (SQLException e){
-            Log.e(LOGTAG, e.toString());
-        }
-        return returnPlayerID;
-    }
-
-    public void insertPlayerTips(List<Tipp> tipps){
-        try (SQLiteDatabase buffDB = this.getWritableDatabase()){
-            buffDB.close();
-        } catch (SQLException e){
-            Log.e(LOGTAG, e.toString());
-        }
-    }
-
-
-    public void setPlayerTips(Player player){
-        //gucken, ob der Spieler vorhanden ist -> wenn nicht, id setzen für die results
-        List<Tipp> tippList = player.getTippList();
-        int dbPlayerID;
-
-        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
-            String[] selection = {player.getPlayerName()};
-            String sqlTransaction = "SELECT " + COL_P_ID + " FROM " + TABLE_PLAYERS;
-
-            Cursor cursor = buffDB.rawQuery(sqlTransaction, selection);
-            if(cursor.getCount() == 0){
-                dbPlayerID = insertPlayer(player.getPlayerName());
-
-                if (dbPlayerID > -1){
-                    player.setPlayerID(dbPlayerID);
-                }
+            String sqlTransaction;
+            for (int i = 0; i < inputList.size(); i++) {
+                sqlTransaction = "INSERT OR REPLACE INTO " + TABLE_PLAYER_RESULTS +
+                        "(" + COL_PR_PLAYERID + ", " + COL_PR_MATCHID + ", " + COL_PR_TIPONE + ", " + COL_PR_TIPTWO + ") " +
+                        "VALUES (" + player.getPlayerID() + ", " + inputList.get(i).getMatch().getMatchId() + ", " + inputList.get(i).getTipp1() +
+                        ", " + inputList.get(i).getTipp2() +")";
+                buffDB.execSQL(sqlTransaction);
             }
             buffDB.close();
         } catch (SQLException e){
             Log.e(LOGTAG, e.toString());
         }
-
-        //übertragen der tipps in playerresults !!MATCH_ID!!
     }
+    //Gibt die Tipps des Spielers spielerID für das Match matchID wieder
+    public int[] parsePlayerTipps(int matchID, int playerID) {
+        int[] outputArray = new int[2];
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String[] args = {String.valueOf(playerID), String.valueOf(matchID)};
+            String sqlTransaction = "SELECT " + TABLE_PLAYER_RESULTS + "." + COL_PR_TIPONE + ", " + TABLE_PLAYER_RESULTS + "." + COL_PR_TIPTWO +
+                    " FROM " + TABLE_PLAYER_RESULTS + " WHERE " + TABLE_PLAYER_RESULTS + "." + COL_PR_PLAYERID + " = ? AND " +
+                    TABLE_PLAYER_RESULTS + "." + COL_PR_MATCHID + " = ?";
 
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
 
+            int COL_TipOne = cursor.getColumnIndexOrThrow(COL_PR_TIPONE);
+            int COL_TipTwo = cursor.getColumnIndexOrThrow(COL_PR_TIPTWO);
+
+            while(cursor.moveToNext()) {
+                outputArray[0] = cursor.getInt(COL_TipOne);
+                outputArray[1] = cursor.getInt(COL_TipTwo);
+            }
+            cursor.close();
+        } catch(SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return outputArray;
+    }
+    //Gibt das eigentliche Ergebnis für das Match matchID wieder
+    public int[] parseMatchResults(int matchID){
+        int[] outputArray = new int[2];
+        try (SQLiteDatabase buffDB = this.getReadableDatabase()){
+            String[] args = {String.valueOf(matchID)};
+            String sqlTransaction = "SELECT " + TABLE_MATCH_RESULTS + "." + COL_MR_GOALONE + ", " + TABLE_MATCH_RESULTS + "." + COL_MR_GOALTWO +
+                    " FROM " + TABLE_MATCH_RESULTS + " WHERE " + TABLE_MATCH_RESULTS + "." + COL_MR_MATCHID + " = ?";
+
+            Cursor cursor = buffDB.rawQuery(sqlTransaction, args);
+
+            outputArray = new int[2];
+
+            int COL_GoalOne = cursor.getColumnIndexOrThrow(COL_MR_GOALONE);
+            int COL_GoalTwo = cursor.getColumnIndexOrThrow(COL_MR_GOALTWO);
+
+            while(cursor.moveToNext()) {
+                outputArray[0] = cursor.getInt(COL_GoalOne);
+                outputArray[1] = cursor.getInt(COL_GoalTwo);
+            }
+            cursor.close();
+        } catch(SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return outputArray;
+    }
+    //Fügt den Spieler playerName in die TABLE_PLAYERS hinzu und gibt die ID zurück
+    public int insertPlayer(String playerName){
+        try (SQLiteDatabase buffDB = this.getWritableDatabase()){
+            String sqlTransaction = "INSERT INTO " +  TABLE_PLAYERS + " ("+ COL_P_NAME +", "+ COL_P_SCORE+") VALUES (?, 0)";
+            String[] args = {playerName};
+            buffDB.execSQL(sqlTransaction, args);
+
+            buffDB.close();
+            return getPlayerID(playerName);
+
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+        return -1;
+    }
+    //Setzt den Punktestand des Spielers playerID auf playerScore
+    public void updatePlayerScore(int playerID, float playerScore){
+        try (SQLiteDatabase buffDB = this.getWritableDatabase()){
+            String sqlTransaction = "UPDATE " + TABLE_PLAYERS + " SET " + COL_P_SCORE + " = ?" + " WHERE " + TABLE_PLAYERS + "." + COL_P_ID +" = ?";
+            String[] args = {String.valueOf(playerScore), String.valueOf(playerID)};
+
+            buffDB.execSQL(sqlTransaction, args);
+
+            buffDB.close();
+        } catch (SQLException e){
+            Log.e(LOGTAG, e.toString());
+        }
+    }
 }

@@ -29,7 +29,7 @@
         android:animationCache="false"
         android:scrollingCache="false"
         android:smoothScrollbar="true"
-        android:dividerHeight="4dp"
+        android:dividerHeight="20dp"
         />
 
     <Button

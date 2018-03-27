@@ -18,8 +18,8 @@ public class Tipp{
 
     public Tipp(Match match){
         this.match = match;
-        this.tipp1 = 0;
-        this.tipp2 = 0;
+        this.tipp1 = -1;
+        this.tipp2 = -1;
     }
 
     public Tipp(Match match, int tipp1, int tipp2){
