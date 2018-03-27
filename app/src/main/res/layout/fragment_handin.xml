@@ -2,13 +2,16 @@
 
 <RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools"
+    android:id="@+id/fragment_list_handin"
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:paddingLeft="@dimen/fab_margin"
     android:paddingRight="@dimen/fab_margin"
     android:paddingTop="@dimen/fab_margin"
     android:paddingBottom="@dimen/fab_margin"
-    tools:context=".HandinFragment">
+    tools:context=".HandinFragment"
+    android:focusable="true"
+    android:focusableInTouchMode="true">
 
     <EditText
         android:layout_width="150dp"
@@ -23,6 +26,10 @@
         android:layout_height="wrap_content"
         android:id="@+id/list_view_group"
         android:layout_below="@id/player_name"
+        android:animationCache="false"
+        android:scrollingCache="false"
+        android:smoothScrollbar="true"
+        android:dividerHeight="20dp"
         />
 
     <Button
@@ -30,7 +37,8 @@
         android:layout_height="wrap_content"
         android:id="@+id/button_submit"
         android:text="@string/button_submit"
-        android:layout_below="@id/list_view_group"
+        android:layout_toEndOf="@id/player_name"
+        android:layout_alignParentEnd="true"
         />
 
 </RelativeLayout>

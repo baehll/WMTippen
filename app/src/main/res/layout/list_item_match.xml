@@ -23,11 +23,11 @@
             android:layout_width="35dp"
             android:layout_height="41.5dp"
             android:id="@+id/list_item_match_tip1_edit_text"
-            android:inputType="text"
+            android:inputType="number"
             android:textSize="20sp"
             android:singleLine="true"
-            android:focusable="true"
-            android:textAlignment="center"/>
+            android:textAlignment="center"
+            android:hint="@string/tipp_init"/>
 
         <TextView
             android:layout_width="wrap_content"
@@ -43,10 +43,10 @@
             android:layout_height="41.5dp"
             android:id="@+id/list_item_match_tip2_edit_text"
             android:layout_toEndOf="@id/list_item_match_colon_text_view"
-            android:inputType="text"
+            android:inputType="number"
             android:textSize="20sp"
-            android:focusable="true"
-            android:textAlignment="center"/>
+            android:textAlignment="center"
+            android:hint="@string/tipp_init"/>
 
     </RelativeLayout>
 

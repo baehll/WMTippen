@@ -18,4 +18,5 @@ public class Separator{
     public String getTitle() {
         return title;
     }
+    public void setTitle(String s){this.title = s;}
 }
